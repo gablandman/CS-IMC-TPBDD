@@ -1,0 +1,1 @@
+SELECT count(idArtist) FROM dbo.tArtist
