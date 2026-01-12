@@ -1,3 +1,3 @@
 SELECT primaryName 
 FROM dbo.tArtist 
-WHERE birthYear <= 1960
+WHERE birthYear = 1960
