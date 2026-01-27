@@ -1,0 +1,64 @@
+// 1.
+// addV cree un vertex avec le label donne, property() ajoute les attributs
+// pk = partition key obligatoire pour CosmosDB
+g.addV('Artist').property('primaryName', 'Gabriel Landman').property('birthYear', 2002).property('pk', 'Artist')
+
+// Verification
+g.V().hasLabel('Artist').has('primaryName', 'Gabriel Landman')
+
+
+// 2.
+g.addV('Film').property('primaryTitle', "L'histoire de mon 20 au cours Infrastructure de donnees").property('startYear', 2026).property('pk', 'Film')
+
+// Verification
+g.V().hasLabel('Film').has('primaryTitle', "L'histoire de mon 20 au cours Infrastructure de donnees")
+
+
+// 3.
+// as() stocke une reference au vertex, addE() ajoute une arete, from/to indiquent la direction
+g.V().hasLabel('Artist').has('primaryName', 'Gabriel Landman').as('a').V().hasLabel('Film').has('primaryTitle', "L'histoire de mon 20 au cours Infrastructure de donnees").as('f').addE('ACTED_IN').from('a').to('f')
+
+
+// 4.
+g.addV('Artist').property('primaryName', 'Laurent Cabaret').property('pk', 'Artist')
+g.addV('Artist').property('primaryName', 'Francesca Bugiotti').property('pk', 'Artist')
+
+// On les relie au film avec DIRECTED
+g.V().hasLabel('Artist').has('primaryName', 'Laurent Cabaret').as('p').V().hasLabel('Film').has('primaryTitle', "L'histoire de mon 20 au cours Infrastructure de donnees").as('f').addE('DIRECTED').from('p').to('f')
+
+g.V().hasLabel('Artist').has('primaryName', 'Francesca Bugiotti').as('p').V().hasLabel('Film').has('primaryTitle', "L'histoire de mon 20 au cours Infrastructure de donnees").as('f').addE('DIRECTED').from('p').to('f')
+
+
+// 5.
+// valueMap() renvoie les proprietes sous forme de dictionnaire
+g.V().hasLabel('Artist').has('primaryName', 'Ed Harris').valueMap('primaryName', 'birthYear')
+
+
+// 6.
+g.V().hasLabel('Film').valueMap()
+
+
+// 7.
+// values() extrait une propriete specifique
+g.V().hasLabel('Artist').has('birthYear', 1963).values('primaryName')
+
+// count() compte les resultats
+g.V().hasLabel('Artist').has('birthYear', 1963).count()
+
+
+// 8.
+// out('acted in') suit les aretes sortantes, where() filtre, is(gt(1)) = superieur a 1
+// project() formate la sortie avec des colonnes nommees
+g.V().hasLabel('Artist').where(out('acted in').count().is(gt(1))).project('nom', 'films').by('primaryName').by(out('acted in').count())
+
+
+// 9.
+// outE() = aretes sortantes, label() = type de l'arete, dedup() = pas de doublons
+g.V().hasLabel('Artist').where(outE().label().dedup().count().is(gt(1))).project('nom', 'nbMetiers').by('primaryName').by(outE().label().dedup().count())
+
+
+// 10.
+// On cherche un artiste avec une arete e1 vers un film, puis une autre arete e2 differente (neq) vers le meme artiste
+// Cela detecte les cas acteur + realisateur sur le meme film
+g.V().hasLabel('Artist').as('a').outE().as('e1').inV().hasLabel('Film').as('f').inE().where(neq('e1')).as('e2').outV().where(eq('a')).select('a', 'f', 'e1', 'e2').by('primaryName').by('primaryTitle').by(label).by(label).dedup()
+
